@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import javafx.scene.Node;
 import javafx.scene.control.SkinBase;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -67,8 +68,8 @@ public class WordleSkin extends SkinBase<Wordle> {
     public  final List<TweetLayout.TweetWordNode> tweetWordList = new ArrayList<>();
     private final Pane pane;
     private final Pane stackPane;
-    private HBox infoBox;
-    private HBox mediaBox;
+    private Pane infoBox;
+    private Pane mediaBox;
 
     private int displayCloudTags = 25;
 
@@ -106,19 +107,19 @@ public class WordleSkin extends SkinBase<Wordle> {
         return displayCloudTags;
     }
 
-    public HBox getMediaBox() {
+    public Pane getMediaBox() {
         return mediaBox;
     }
 
-    public void setMediaBox(HBox mediaBox) {
+    public void setMediaBox(Pane mediaBox) {
         this.mediaBox = mediaBox;
     }
 
-    public HBox getInfoBox() {
+    public Pane getInfoBox() {
         return infoBox;
     }
 
-    public void setInfoBox(HBox infoBox) {
+    public void setInfoBox(Pane infoBox) {
         this.infoBox = infoBox;
     }
 
