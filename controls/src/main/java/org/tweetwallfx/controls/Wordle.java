@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2014-2015 TweetWallFX
+ * Copyright 2014-2017 TweetWallFX
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,11 +26,6 @@ package org.tweetwallfx.controls;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.ReadOnlyListWrapper;
-import javafx.beans.property.SimpleListProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.collections.FXCollections;
 import javafx.css.CssMetaData;
 import javafx.css.SimpleStyleableBooleanProperty;
 import javafx.css.SimpleStyleableIntegerProperty;
@@ -42,21 +37,12 @@ import javafx.css.StyleableProperty;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 import javafx.scene.text.Font;
-import org.tweetwallfx.controls.dataprovider.DataProvider;
 
 /**
- * @author sven
+ * @author Sven Reimers
  */
 public class Wordle extends Control {
 
-    public enum LayoutMode {
-
-        WORDLE, TWEET
-    }
-
-    ObjectProperty<List<Word>> wordsProperty = new SimpleObjectProperty<>(new ArrayList<>());
-
-    ObjectProperty<LayoutMode> layoutModeProperty = new SimpleObjectProperty<>(LayoutMode.WORDLE);
     private SimpleStyleableStringProperty logo;
     private SimpleStyleableStringProperty secondLogo;
     private SimpleStyleableStringProperty backgroundGraphic;
@@ -66,38 +52,10 @@ public class Wordle extends Control {
     private SimpleStyleableIntegerProperty fontSizeMinProperty;
     private SimpleStyleableIntegerProperty fontSizeMaxProperty;
     private SimpleStyleableIntegerProperty tweetFontSizeProperty;
-
-    private SimpleListProperty<DataProvider> dataProviderList = new ReadOnlyListWrapper<>(FXCollections.observableArrayList());
-    
     private String userAgentStylesheet = null;
 
     public Wordle() {
         getStyleClass().setAll("wordle");
-    }
-    
-    public void addDataProvider(DataProvider dataProvider) {
-        dataProviderList.add(dataProvider);
-    }           
-    
-    @SuppressWarnings("unchecked")
-    public <T extends DataProvider> T getDataProvider(Class<T> klazz) {
-        return (T) dataProviderList.stream().filter(dp -> dp.getClass() == klazz).findFirst().orElse(null);
-    }
-    
-    public void setWords(List<Word> words) {
-        wordsProperty.set(words);
-    }
-
-    public ObjectProperty<List<Word>> wordsProperty() {
-        return wordsProperty;
-    }
-
-    public void setLayoutMode(LayoutMode layoutMode) {
-        layoutModeProperty.set(layoutMode);
-    }
-
-    public ObjectProperty<LayoutMode> layoutModeProperty() {
-        return layoutModeProperty;
     }
 
     @Override
@@ -112,14 +70,14 @@ public class Wordle extends Control {
     public void setLogo(String value) {
         logo.set(value);
     }
-    
+
     public SimpleStyleableStringProperty logoProperty() {
         if (logo == null) {
             logo = new SimpleStyleableStringProperty(StyleableProperties.LOGO_GRAPHIC, Wordle.this, "logo", null);
         }
         return logo;
     }
-    
+
     public String getSecondLogo() {
         return secondLogo.get();
     }
@@ -134,7 +92,7 @@ public class Wordle extends Control {
         }
         return secondLogo;
     }
-    
+
     public String getBackgroundGraphic() {
         return backgroundGraphic.get();
     }
@@ -277,7 +235,7 @@ public class Wordle extends Control {
                 return control.secondLogoProperty();
             }
         };
-        
+
         private static final CssMetaData< Wordle, String> BACKGROUND_GRAPHIC
                 = new CssMetaData<Wordle, String>("-fx-background-graphic",
                         StyleConverter.getUrlConverter(), null) {

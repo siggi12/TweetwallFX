@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2014-2016 TweetWallFX
+ * Copyright 2014-2017 TweetWallFX
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,32 +23,45 @@
  */
 package org.tweetwallfx.controls.steps;
 
-import org.tweetwallfx.controls.stepengine.AbstractStep;
+import java.time.Duration;
+import org.tweetwallfx.controls.stepengine.Step;
 import org.tweetwallfx.controls.stepengine.StepEngine.MachineContext;
 
 /**
- *
- * @author Sven
+ * @author Sven Reimers
  */
-public class PauseStep extends AbstractStep {
+public class PauseStep implements Step {
 
-    private final long pause;
+    private final Duration pause;
 
-    public PauseStep() {
-        this(5000);
-    }
-    
-    public PauseStep(long pause) {
+    private PauseStep(final Duration pause) {
         this.pause = pause;
     }
-    
+
     @Override
-    public long preferredStepDuration(MachineContext context) {
+    public Duration preferredStepDuration(final MachineContext context) {
         return this.pause;
     }
 
     @Override
-    public void doStep(MachineContext context) {
+    public void doStep(final MachineContext context) {
         context.proceed();
+    }
+
+    /**
+     * Implementation of {@link Step.Factory} as Service implementation creating
+     * {@link PauseStep}.
+     */
+    public static final class Factory implements Step.Factory {
+
+        @Override
+        public PauseStep create() {
+            return new PauseStep(Duration.ofSeconds(5));
+        }
+
+        @Override
+        public Class<PauseStep> getStepClass() {
+            return PauseStep.class;
+        }
     }
 }

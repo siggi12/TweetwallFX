@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2014-2016 TweetWallFX
+ * Copyright 2014-2017 TweetWallFX
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,28 +23,80 @@
  */
 package org.tweetwallfx.controls.dataprovider;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 import org.tweetwallfx.controls.Word;
+import org.tweetwallfx.tweet.StopList;
+import org.tweetwallfx.tweet.api.Tweet;
+import org.tweetwallfx.tweet.api.TweetStream;
+import org.tweetwallfx.tweet.api.entry.MediaTweetEntry;
+import org.tweetwallfx.tweet.api.entry.UrlTweetEntry;
+import org.tweetwallfx.tweet.api.entry.UserMentionTweetEntry;
 
-/**
- *
- * @author sven
- */
-public class TagCloudDataProvider implements DataProvider{
+public class TagCloudDataProvider implements DataProvider, DataProvider.HistoryAware {
+
+    private static final int NUM_MAX_WORDS = 40;
+    private static final Comparator<Map.Entry<String, Long>> COMPARATOR = Map.Entry.comparingByValue();
 
     private List<Word> additionalTweetWords = null;
-    
-    public void setAdditionalTweetWords(List<Word> newWordList) {
+    private final Map<String, Long> tree = new TreeMap<>();
+
+    private TagCloudDataProvider(final TweetStream tweetStream) {
+        tweetStream.onTweet(tweet -> processTweet(tweet));
+    }
+
+    @Override
+    public void processTweet(final Tweet tweet) {
+        updateTree(tweet);
+    }
+
+    public void setAdditionalTweetWords(final List<Word> newWordList) {
         this.additionalTweetWords = newWordList;
     }
-    
+
     public List<Word> getAdditionalTweetWords() {
         return this.additionalTweetWords;
     }
-    
+
+    public List<Word> getWords() {
+        return tree.entrySet().stream()
+                .sorted(COMPARATOR.reversed())
+                .limit(NUM_MAX_WORDS).map(entry -> new Word(entry.getKey(), entry.getValue())).collect(Collectors.toList());
+    }
+
+    private void updateTree(final Tweet tweet) {
+        StopList.WORD_SPLIT.splitAsStream(tweet.getTextWithout(UrlTweetEntry.class)
+                .getTextWithout(MediaTweetEntry.class)
+                .getTextWithout(UserMentionTweetEntry.class)
+                .get()
+                .replaceAll("[.,!?:´`']((\\s+)|($))", " ")
+                .replaceAll("['“”‘’\"()]", " "))
+                .filter(l -> l.length() > 2)
+                .filter(StopList.IS_NOT_URL) // no url or part thereof
+                .map(String::toLowerCase)
+                .map(StopList::removeEmojis)
+                .filter(StopList::notIn)
+                .forEach(w -> tree.put(w, (tree.containsKey(w) ? tree.get(w) : 0) + 1L));
+    }
+
     @Override
     public String getName() {
         return "TagCloud";
     }
+
+    public static class Factory implements DataProvider.Factory {
+
+        @Override
+        public TagCloudDataProvider create(TweetStream tweetStream) {
+            return new TagCloudDataProvider(tweetStream);
+        }
     
+        @Override
+        public Class<TagCloudDataProvider> getDataProviderClass() {
+            return TagCloudDataProvider.class;
+        }
+    }
 }
